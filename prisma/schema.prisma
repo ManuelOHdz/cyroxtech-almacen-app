@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model User {
+  id                    String                 @id @default(cuid())
+  name                  String?
+  email                 String?                @unique
+  emailVerified         DateTime?              @map("email_verified")
+  image                 String?
+  password              String?
+  role                  UserRole               @default(USER)
+  isTwoFactorEnabled    Boolean                @default(false)
+  cargo                 String?
+  departament           String?
+  estado                Boolean?               @default(true)
+  telefono              String?                @db.Char(10)
+  accounts              Account[]
+  historiales           Historial?
+  twoFactorConfirmation TwoFactorConfirmation?
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorConfirmation {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Proveedor {
+  id        String     @id @default(cuid())
+  nombre    String
+  segmento  String?
+  ubicacion String?
+  contacto  String?
+  puesto    String?
+  correo    String?
+  telefono  String?
+  ext       String?   //extension
+  articulos Articulo[]
+}
+
+model Categoria {
+  id          String     @id @default(cuid())
+  nombre      String
+  descripcion String?
+  articulos   Articulo[]
+}
+
+model Marca {
+  id        String     @id @default(cuid())
+  nombre    String
+  articulos Articulo[]
+}
+
+model Articulo {
+  id          String    @id @default(cuid())
+  codigo      String?   @unique
+  imagen      String?
+  name        String
+  stock       Int
+  min_stock   Int
+  max_stock   Int
+  categoriaId String
+  marcaId     String
+  modelo      String?
+  no_parte    String
+  precio      Decimal   @db.Decimal(10, 2)
+  moneda      Moneda
+  estado      Estado
+  proveedorId String
+  almacen     String
+  rack        String
+  nivel       String
+  fila        String
+  columna     String
+  categoria   Categoria @relation(fields: [categoriaId], references: [id])
+  marca       Marca     @relation(fields: [marcaId], references: [id])
+  proveedor   Proveedor @relation(fields: [proveedorId], references: [id])
+}
+
+model Historial {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  Descripcion String
+  fecha       DateTime
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum Moneda {
+  MXN
+  USD
+  EURO
+}
+
+enum Estado {
+  NUEVO
+  USADO
+  DEFECTUOSO
+}
+
+enum TipoSalida {
+  DEFINITIVO
+  PRESTAMO
+}
