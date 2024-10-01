@@ -7,6 +7,7 @@ export const ErrorCard = () => {
             headerLabel="Ups! Algo salio mal!"
             backButtonHref="/auth/login"
             backButtonLabel="Regresar a Iniciar Sesion"
+            headerTitle=""
         >
             <div className="w-full flex justify-center items-center">
                 <ExclamationTriangleIcon className="text-destructive"/>
